@@ -9,7 +9,7 @@
 main:
 	li $s0, 0
 	li $t0, 5
-	la $s1, arr
+	la $s1, arr	
 
 for_loop:
 	beq $s0, $t0, exit_for_loop
