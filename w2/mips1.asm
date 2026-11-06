@@ -1,7 +1,6 @@
 .data
-	arr:     .space 20
-	result:  .asciiz "Result: "
-	space:   .asciiz " "
+	arr: .space 20
+	space: .asciiz " "
 
 .text
 .globl main
@@ -16,6 +15,9 @@ input_loop:
 	li $v0, 5
 	syscall
 
+	move $a0, $v0
+	jal check
+
 	sll $t1, $t0, 2
 	add $t2, $t1, $s1
 	sw $v0, 0($t2)
@@ -26,41 +28,8 @@ input_loop:
 exit_loop:
 	li $t0, 0
 
-process_loop:
-	beq $t0, $s0, print_start
-
-	sll $t1, $t0, 2
-	add $t2, $t1, $s1
-	lw $t3, 0($t2)
-
-	andi $t4, $t3, 3
-	beq $t4, $zero, next
-
-	li $t5, 2
-	ble $t4, $t5, round_down
-
-	addi $t3, $t3, 1
-	j store
-
-round_down:
-	sub $t3, $t3, $t4
-
-store:
-	sw $t3, 0($t2)
-
-next:
-	addi $t0, $t0, 1
-	j process_loop
-
-print_start:
-	li $v0, 4
-	la $a0, result
-	syscall
-
-	li $t0, 0
-
 print_loop:
-	beq $t0, $s0, done
+	beq $t0, $s0, exit
 
 	sll $t1, $t0, 2
 	add $t2, $t1, $s1
@@ -68,13 +37,30 @@ print_loop:
 	li $v0, 1
 	syscall
 
-	li $v0, 4
 	la $a0, space
+	li $v0, 4
 	syscall
 
 	addi $t0, $t0, 1
 	j print_loop
 
-done:
+exit:
 	li $v0, 10
 	syscall
+
+check:
+	andi $t3, $a0, 3
+	beq $t3, 1, round_down
+	beq $t3, 2, round_down
+	bne $t3, 3, exit_check
+
+	addi $a0, $a0, 1
+	j exit_check
+
+round_down:
+	sra $a0, $a0, 2
+	sll $a0, $a0, 2
+
+exit_check:
+	move $v0, $a0
+	jr $ra
